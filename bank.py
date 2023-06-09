@@ -55,8 +55,15 @@ class User:
 
     @property
     def current_balance(self):
-        return self.total_amount
+        for user in self.my_bank.users:
+            if user['username'] == self.username and user['acc_no'] == self.account_no:
+                return user['amount']
+                break
     
+    @current_balance.setter
+    def current_balance(self, new_balance):
+        self.total_amount = new_balance
+
     @property
     def transaction_history(self):
         return self.history
@@ -70,10 +77,40 @@ class User:
                 if user['username'] == self.username and user['acc_no'] == self.account_no:
                     user['amount'] = self.total_amount
                     self.my_bank.withdraw_balance(withdraw_amount)
-            print(f"Your money successfully withdrawn. Amount : {withdraw_amount}, Current balance : {self.current_balance}")
+            print(f"Your money successfully withdrawn. Amount: {withdraw_amount}, Current balance: {self.current_balance}")
+
+        elif withdraw_amount > self.my_bank.balance:
+            print(f"Sorry! The bank is bankrupt!")
         
         else:
-            print(f"Not enough money! Your current balance : {self.current_balance}")
+            print(f"Not enough money! Your current balance: {self.current_balance}")
+
+    def transfer_money(self, receiver_acc, transfer_amount):
+        if self.total_amount > transfer_amount:
+            for user in self.my_bank.users:
+                if user['acc_no'] == receiver_acc:
+                    receiver = user
+                    break
+            else:
+                receiver = None
+
+            for user in self.my_bank.users:
+                if user['username'] == self.username and user['acc_no'] == self.account_no:
+                    user['amount'] -= transfer_amount
+                    break 
+            
+            if receiver and receiver['username'] != self.username:
+                receiver['amount'] += transfer_amount
+                self.total_amount -= transfer_amount
+                self.history.append({'username': self.username, 'acc_no': self.account_no, 'amount': transfer_amount, 'date': datetime.now(), 'transaction_type': "Transfer Money"})
+                self.my_bank.transactions.append({'username': self.username, 'acc_no': self.account_no, 'amount': transfer_amount, 'date': datetime.now(), 'transaction_type': "Transfer Money"})
+                self.my_bank.transactions.append({'username': receiver['username'], 'acc_no': receiver_acc, 'amount': transfer_amount, 'date': datetime.now(), 'transaction_type': "Added Transferred Money"})
+                print(f"Successfully transferred amount {transfer_amount} to the account no.: {receiver_acc}")
+
+            else:
+                print(f"Receiver's account not found or cannot transfer money to your own account!")
+        else:
+            print(f"Not enough money! Your current balance: {self.current_balance}")
 
     def __repr__(self) -> str:
         return f'{self.username} - account no: {self.account_no} - total money: {self.total_amount}'
@@ -82,9 +119,6 @@ class User:
 a_bank = Bank('Hasib bank')
 abc = User(a_bank, 'rockie', 5000)
 pqr = User(a_bank, 'nafi', 7000)
-abc.withdraw(3000)
-pqr.add_money(15000)
-print(abc.current_balance)
-print(pqr.current_balance)
-print(a_bank.users)
-print(a_bank.transactions)
+abc.transfer_money(102, 3500)
+for transaction in a_bank.transactions:
+    print(transaction)
