@@ -4,6 +4,7 @@ class Bank:
     def __init__(self, name) -> None:
         self.name = name
         self.__users = []
+        self.__admins = []
         self.__balance = 0
         self.__loan = 0
         self.loan_feature = True 
@@ -12,10 +13,22 @@ class Bank:
     @property
     def users(self):
         return self.__users
+
+    @property
+    def admins(self):
+        return self.__admins
     
     @property
     def transactions(self):
         return self.__transactions
+    
+    @property
+    def loan(self):
+        return self.__loan
+    
+    @loan.setter
+    def loan(self, new_amount):
+        self.__loan += new_amount
     
     def add_balance(self, amount):
         self.__balance += amount 
@@ -29,7 +42,7 @@ class Bank:
 
 
     def __repr__(self) -> str:
-        return f'Bank: {self.name}'
+        return f'Bank: {self.name} - Loan Feature : {self.loan_feature}'
     
 class User:
     def __init__(self, bank, username, deposit) -> None:
@@ -37,6 +50,7 @@ class User:
         self.username = username 
         self.account_no = len(bank.users) + 101
         self.total_amount = 0 
+        self.loan = 0
         self.history = []
         self.add_money(deposit) 
 
@@ -112,13 +126,50 @@ class User:
         else:
             print(f"Not enough money! Your current balance: {self.current_balance}")
 
+    def add_loan(self, loan_amount):
+        if self.my_bank.balance > loan_amount and loan_amount <= 2 * self.current_balance:
+            self.add_loan = loan_amount
+            self.my_bank.loan = loan_amount
+            print(f"You have taken a loan of amount {loan_amount}")
+
+        else:
+            print(f"Sorry! You're not eligible for loan")
+
+
     def __repr__(self) -> str:
         return f'{self.username} - account no: {self.account_no} - total money: {self.total_amount}'
+    
+
+
+class Admin:
+    def __init__(self, bank, username) -> None:
+        self.my_bank = bank 
+        self.username = username
+        self.admin_id = len(bank.admins) + 501 
+
+    @property
+    def total_bank_balance(self):
+        return self.my_bank.balance 
+
+    @property
+    def total_loan_amount(self):
+        return self.my_bank.loan 
+    
+    def loan_feature(self, loan_opportunity):
+        self.my_bank.loan_feature = loan_opportunity
+
+    def __repr__(self) -> str:
+        return f"Admin name : {self.username}, admin-id : {self.admin_id}"
 
     
 a_bank = Bank('Hasib bank')
 abc = User(a_bank, 'rockie', 5000)
 pqr = User(a_bank, 'nafi', 7000)
-abc.transfer_money(102, 3500)
-for transaction in a_bank.transactions:
-    print(transaction)
+pqr.add_loan(5000)
+abc.add_loan(1234)
+xyz = Admin(a_bank, 'nahee')
+print(xyz.total_bank_balance)
+print(xyz.total_loan_amount)
+xyz.loan_feature(False)
+
+
